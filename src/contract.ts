@@ -451,14 +451,15 @@ export class Contract extends Common {
     issueTokenAmount?: string,
     templateVariables?: ralph.TemplateVariables
   ): Promise<DeployContractTransaction> {
+    const bytecode = this.buildByteCode(templateVariables)
     const params: api.BuildContractDeployScriptTx = {
       fromPublicKey: await signer.getPublicKey(),
-      bytecode: this.buildByteCode(templateVariables),
+      bytecode: bytecode,
       initialFields: this.toApiFields(initialFields),
       issueTokenAmount: issueTokenAmount
     }
     const response = await signer.client.contracts.postContractsUnsignedTxBuildContract(params)
-    return fromApiDeployContractUnsignedTx(convertHttpResponse(response))
+    return fromApiDeployContractUnsignedTx(convertHttpResponse(response), bytecode)
   }
 
   buildByteCode(templateVariables?: ralph.TemplateVariables): string {
@@ -921,10 +922,23 @@ export interface DeployContractTransaction {
   txId: string
   contractAddress: string
   contractId: string
+
+  bytecode: string
+  contractCodeHash(): string
 }
 
-function fromApiDeployContractUnsignedTx(result: api.BuildContractDeployScriptTxResult): DeployContractTransaction {
-  return { ...result, contractId: binToHex(contractIdFromAddress(result.contractAddress)) }
+function fromApiDeployContractUnsignedTx(
+  result: api.BuildContractDeployScriptTxResult,
+  bytecode: string
+): DeployContractTransaction {
+  return {
+    ...result,
+    contractId: binToHex(contractIdFromAddress(result.contractAddress)),
+    bytecode: bytecode,
+    contractCodeHash(): string {
+      return ralph.codeHash(this.bytecode)
+    }
+  }
 }
 
 export interface BuildScriptTx {

@@ -19,6 +19,8 @@ along with the library. If not, see <http://www.gnu.org/licenses/>.
 import { CliqueClient } from '../src/clique'
 import { Signer } from '../src/signer'
 import { Contract, Script, TestContractParams } from '../src/contract'
+import * as ralph from '../src/ralph'
+import { SimpleContractByteCode } from '../api/api-alephium'
 
 describe('contract', function () {
   async function testSuite1() {
@@ -57,6 +59,8 @@ describe('contract', function () {
 
     const subDeployTx = await sub.transactionForDeployment(signer, [0])
     const subContractId = subDeployTx.contractId
+    const subCodeHash = subDeployTx.contractCodeHash()
+    expect(subCodeHash).toEqual(ralph.codeHash((sub.compiled as SimpleContractByteCode).bytecode))
     expect(subDeployTx.group).toEqual(3)
     const subSubmitResult = await signer.submitTransaction(subDeployTx.unsignedTx, subDeployTx.txId)
     expect(subSubmitResult.fromGroup).toEqual(3)
@@ -65,6 +69,8 @@ describe('contract', function () {
 
     const addDeployTx = await add.transactionForDeployment(signer, [0], undefined, { subContractId: subContractId })
     expect(addDeployTx.group).toEqual(3)
+    const addContractCodeHash = addDeployTx.contractCodeHash()
+    expect(addContractCodeHash).toEqual(ralph.codeHash(add.buildByteCode({ subContractId: subContractId })))
     const addSubmitResult = await signer.submitTransaction(addDeployTx.unsignedTx, addDeployTx.txId)
     expect(addSubmitResult.fromGroup).toEqual(3)
     expect(addSubmitResult.toGroup).toEqual(3)
