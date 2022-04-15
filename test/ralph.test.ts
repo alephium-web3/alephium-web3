@@ -149,4 +149,10 @@ describe('contract', function () {
       '01024046405301000203021205160016015f14402055834baf25f40fe5a8d6ac83c5f2b76a1677ed3ddbd6a79c4dea274992982e2b1702a00016002a16012aa100a00016001601160201000200000202020416001601000002'
     )
   })
+
+  it('should test codeHash', async () => {
+    const bytecode = '00010701000000000102'
+    const hash = ralph.codeHash(bytecode)
+    expect(hash).toEqual('44a7763014387d69f4b10b9e33066e7286e67f91d0775d3e8359c2b3ef5cd420')
+  })
 })

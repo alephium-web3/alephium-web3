@@ -20,6 +20,7 @@ import { Buffer } from 'buffer/'
 import bs58 from './bs58'
 import { binToHex, isHexString } from './utils'
 import * as api from '../api/api-alephium'
+import * as blake from 'blakejs'
 
 const bigIntZero = BigInt(0)
 
@@ -267,4 +268,8 @@ export function buildContractByteCode(
     methodIndexes.map((index) => binToHex(encodeI256(BigInt(index)))).join('') +
     methodsBuilt.join('')
   )
+}
+
+export function codeHash(bytecode: string): string {
+  return Buffer.from(blake.blake2b(Buffer.from(bytecode, 'hex'), undefined, 32)).toString('hex')
 }
