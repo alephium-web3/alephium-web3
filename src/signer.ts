@@ -141,6 +141,21 @@ export interface SignerProvider {
   signHexString(params: SignHexStringParams): Promise<SignHexStringResult>
   signMessage(params: SignMessageParams): Promise<SignMessageResult>
 }
+export interface SignerProviderWithPassword {
+  getAccounts(): Promise<Account[]>
+  signTransferTx(params: SignTransferTxParams, password: string): Promise<SignTransferTxResult>
+  signContractCreationTx(params: SignContractCreationTxParams, password: string): Promise<SignContractCreationTxResult>
+  signScriptTx(params: SignScriptTxParams, password: string): Promise<SignScriptTxResult>
+  signUnsignedTx(params: SignUnsignedTxParams, password: string): Promise<SignUnsignedTxResult>
+  signHexString(params: SignHexStringParams, password: string): Promise<SignHexStringResult>
+  signMessage(params: SignMessageParams, password: string): Promise<SignMessageResult>
+}
+type UnreadableSignerProviderWithPassword = {
+  [P in keyof SignerProvider]: Parameters<SignerProvider[P]> extends [any]
+    ? (params: Parameters<SignerProvider[P]>[0], password: string) => ReturnType<SignerProvider[P]>
+    : SignerProvider[P]
+}
+assertType<Eq<SignerProviderWithPassword, UnreadableSignerProviderWithPassword>>()
 
 function checkParams(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalFn = descriptor.value
